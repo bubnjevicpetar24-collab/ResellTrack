@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ResellTrack">
+<meta name="theme-color" content="#080c14">
+<title>ResellTrack</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23080c14'/%3E%3Ctext x='90' y='115' font-size='80' text-anchor='middle' fill='%2300e87a'%3E%E2%82%BF%3C/text%3E%3C/svg%3E">
+<style>
+/* ── RESET & BASE ─────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080c14;
+  --bg2:#0e1420;
+  --bg3:#161e2e;
+  --bg4:#1c2538;
+  --border:#1f2d45;
+  --border2:#263447;
+  --text:#e8eef8;
+  --muted:#5a7090;
+  --muted2:#3d5070;
+  --green:#00e87a;
+  --green-dim:rgba(0,232,122,.12);
+  --red:#ff4455;
+  --red-dim:rgba(255,68,85,.12);
+  --amber:#ffb020;
+  --amber-dim:rgba(255,176,32,.12);
+  --blue:#4d9fff;
+  --blue-dim:rgba(77,159,255,.12);
+  --purple:#a78bfa;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --sidebar:240px;
+}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;
+  overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(77,159,255,.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(0,232,122,.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 60% 50%, rgba(167,139,250,.04) 0%, transparent 50%);
+  background-attachment:fixed;
+}
+
+/* ── LAYOUT ── */
+.app-layout{display:flex;min-height:100vh}
+
+/* SIDEBAR (desktop) */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:rgba(14,20,32,.8);
+  border-right:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  position:fixed;top:0;left:0;height:100vh;
+  display:flex;flex-direction:column;
+  padding:28px 0 20px;
+  z-index:50;
+  transition:transform .3s;
+}
+.sidebar-logo{padding:0 20px 28px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.sidebar-logo h1 span{color:var(--green)}
+.sidebar-logo p{font-size:11px;color:var(--muted);margin-top:3px}
+.sidebar-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.sidebar-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:12px;
+  border:none;background:none;color:var(--muted);
+  font-size:14px;cursor:pointer;text-align:left;width:100%;
+  transition:all .2s;
+}
+.sidebar-item:hover{background:var(--bg3);color:var(--text)}
+.sidebar-item.active{background:var(--green-dim);color:var(--green);font-weight:600}
+.sidebar-item .si-icon{font-size:18px;width:24px;text-align:center}
+.sidebar-country{padding:16px 20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+.sidebar-country .flag{font-size:20px;margin-right:8px}
+
+/* MAIN CONTENT */
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh}
+
+/* TOP BAR */
+.topbar{
+  padding:20px 32px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:24px;
+}
+.topbar-title{font-size:28px;font-weight:700;letter-spacing:-.5px}
+.topbar-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.topbar-date{font-size:13px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:6px 12px}
+.add-btn{
+  display:flex;align-items:center;gap:8px;
+  background:var(--green);color:#000;
+  border:none;border-radius:12px;
+  padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 20px rgba(0,232,122,.25);
+}
+.add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,232,122,.35)}
+.add-btn:active{transform:scale(.97)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+
+/* CONTENT AREA */
+.content{padding:0 32px 40px}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:18px;padding:18px;
+  position:relative;overflow:hidden;
+}
+.stat-card::before{content:'';position:absolute;top:-30px;right:-30px;width:80px;height:80px;border-radius:50%;opacity:.15}
+.stat-card.revenue::before{background:var(--blue)}
+.stat-card.expenses::before{background:var(--red)}
+.stat-card.profit::before{background:var(--green)}
+.stat-card.margin::before{background:var(--amber)}
+.stat-icon{font-size:20px;margin-bottom:8px;opacity:.8}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.stat-value.c-blue{color:var(--blue)}
+.stat-value.c-red{color:var(--red)}
+.stat-value.c-green{color:var(--green)}
+.stat-value.c-amber{color:var(--amber)}
+.stat-change{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* TAX CARD */
+.tax-banner{
+  background:linear-gradient(135deg,rgba(77,159,255,.08),rgba(167,139,250,.06));
+  border:1px solid rgba(77,159,255,.2);
+  border-radius:18px;padding:20px;
+  margin-bottom:24px;
+}
+.tax-banner-title{font-size:13px;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;font-weight:600}
+.tax-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.tax-item{background:rgba(255,255,255,.03);border-radius:12px;padding:12px}
+.tax-item-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.tax-item-val{font-size:17px;font-weight:700}
+.tax-alerts{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.tax-alert{font-size:12px;padding:10px 14px;border-radius:10px;line-height:1.5}
+.tax-alert.warn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,176,32,.2)}
+.tax-alert.ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,232,122,.2)}
+
+/* GRID 2-COL */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.grid3{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:24px}
+
+/* PANEL */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.panel-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.panel-title{font-size:15px;font-weight:600}
+.panel-sub{font-size:12px;color:var(--muted)}
+.panel-body{padding:0}
+
+/* CHART */
+.chart-wrap{padding:20px;position:relative}
+.line-chart{width:100%;overflow:visible}
+
+/* LIST ITEMS */
+.list-item{display:flex;justify-content:space-between;align-items:center;padding:13px 20px;border-bottom:1px solid var(--border)}
+.list-item:last-child{border-bottom:none}
+.li-left{flex:1;min-width:0}
+.li-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.li-right{text-align:right;flex-shrink:0;margin-left:16px}
+.li-amount{font-size:15px;font-weight:600}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;margin-top:3px;font-weight:500}
+.pill{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:3px}
+.pill.pos{background:var(--green-dim);color:var(--green)}
+.pill.neg{background:var(--red-dim);color:var(--red)}
+.del-btn{background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;padding:0;margin-top:4px;opacity:.6}
+.del-btn:hover{opacity:1}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+
+/* SETTINGS */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.settings-section{margin-bottom:24px}
+.settings-label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600}
+.settings-item{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer}
+.settings-item:last-child{border-bottom:none}
+.settings-item:hover{background:var(--bg3)}
+.s-label{font-size:14px}
+.s-val{font-size:13px;color:var(--muted)}
+.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
+.country-btn{padding:10px 8px;border-radius:12px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);font-size:12px;cursor:pointer;text-align:center;line-height:1.4;transition:all .2s}
+.country-btn:hover{border-color:var(--border2);color:var(--text)}
+.country-btn.active{border-color:var(--green);color:var(--green);background:var(--green-dim);font-weight:600}
+.danger-btn{width:100%;padding:13px;background:var(--red-dim);color:var(--red);font-size:14px;font-weight:600;border:1px solid rgba(255,68,85,.3);border-radius:12px;cursor:pointer;margin-top:10px}
+
+/* ── SHEET (MODAL) ─────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;backdrop-filter:blur(6px)}
+.overlay.open{display:block}
+.sheet{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-60%);
+  width:min(520px,95vw);
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:24px;padding:28px;z-index:201;
+  opacity:0;pointer-events:none;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  max-height:90vh;overflow-y:auto;
+}
+.sheet.open{transform:translate(-50%,-50%);opacity:1;pointer-events:all}
+.sheet-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.sheet-title{font-size:20px;font-weight:700}
+.sheet-close{background:var(--bg3);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.sheet-close:hover{color:var(--text)}
+.type-selector{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.type-btn{padding:11px;border-radius:12px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;text-align:center;transition:all .2s}
+.type-btn.active{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.field{margin-bottom:14px}
+.field label{font-size:11px;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--text);outline:none;-webkit-appearance:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.field select option{background:var(--bg3)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn-primary{width:100%;padding:14px;background:var(--green);color:#000;font-size:15px;font-weight:700;border:none;border-radius:13px;cursor:pointer;margin-top:4px;transition:transform .15s}
+.btn-primary:active{transform:scale(.98)}
+
+/* ── MOBILE NAV ────────────────────────────────────────── */
+.mobile-nav{display:none}
+.mob-fab{display:none}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{margin-left:0;padding-bottom:80px}
+  .topbar{padding:calc(var(--safe-top) + 16px) 16px 0;margin-bottom:16px}
+  .topbar-title{font-size:22px}
+  .topbar-date{display:none}
+  .add-btn{display:none}
+  .content{padding:0 16px 20px}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .stat-card{padding:14px}
+  .stat-value{font-size:20px}
+  .grid2,.grid3{grid-template-columns:1fr;gap:10px}
+  .settings-grid{grid-template-columns:1fr}
+  .country-grid{grid-template-columns:repeat(3,1fr)}
+  /* Mobile bottom nav */
+  .mobile-nav{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;
+    background:rgba(8,12,20,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-top:1px solid var(--border);
+    padding-bottom:var(--safe-bottom);
+    z-index:50;
+  }
+  .mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 7px;border:none;background:none;color:var(--muted);font-size:9px;gap:3px;cursor:pointer}
+  .mob-nav-item.active{color:var(--green)}
+  .mob-icon{font-size:21px;line-height:1}
+  .mob-fab{
+    display:flex;position:fixed;bottom:calc(var(--safe-bottom) + 66px);right:16px;
+    width:50px;height:50px;background:var(--green);color:#000;border:none;border-radius:50%;
+    font-size:26px;cursor:pointer;align-items:center;justify-content:center;font-weight:300;
+    box-shadow:0 4px 20px rgba(0,232,122,.4);z-index:49;
+  }
+  .mob-fab:active{transform:scale(.92)}
+  .sheet{top:auto;bottom:0;left:0;right:0;width:100%;border-radius:24px 24px 0 0;transform:translateY(100%);max-height:92vh;padding:0 20px calc(var(--safe-bottom)+20px)}
+  .sheet.open{transform:translateY(0);opacity:1}
+  .sheet-header{padding-top:16px}
+  .panel-header{padding:14px 16px 12px}
+  .list-item{padding:12px 16px}
+  .tax-banner{padding:16px;margin-bottom:16px}
+  .tax-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .stat-value{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>Resell<span>Track</span></h1>
+      <p id="sb-sub">Profit Dashboard</p>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="sidebar-item active" onclick="switchTab('home',this)" data-tab="home">
+        <span class="si-icon">📊</span><span id="sb-nav-home">Übersicht</span>
+      </button>
+      <button class="sidebar-item" onclick="switchTab('sales',this)" data-tab="sales">
+        <span class="si-icon">🏷️</span><span id="sb-nav-sales">Verkäufe</span>
+      </button>
+      <button class="sidebar-item" onclick="switchTab('expenses',this)" data-tab="expenses">
+        <span class="si-icon">💸</span><span id="sb-nav-exp">Ausgaben</span>
+      </button>
+      <button class="sidebar-item" onclick="switchTab('stats',this)" data-tab="stats">
+        <span class="si-icon">📈</span><span id="sb-nav-stats">Statistik</span>
+      </button>
+      <button class="sidebar-item" onclick="switchTab('settings',this)" data-tab="settings">
+        <span class="si-icon">⚙️</span><span id="sb-nav-set">Einstellungen</span>
+      </button>
+    </nav>
+    <div class="sidebar-country" id="sb-country">
+      <span class="flag">🇩🇪</span> Deutschland
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Übersicht</div>
+        <div class="topbar-sub" id="topbar-sub">Dein Profit Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbar-date"></div>
+        <button class="add-btn" onclick="openSheet()">
+          <span>＋</span><span id="add-btn-lbl">Eintrag</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- TAB: HOME -->
+      <div id="tab-home" class="tab-content">
+        <div class="stats-grid">
+          <div class="stat-card revenue">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label" id="lbl-revenue">Umsatz</div>
+            <div class="stat-value c-blue" id="s-revenue">€0</div>
+          </div>
+          <div class="stat-card expenses">
+            <div class="stat-icon">📤</div>
+            <div class="stat-label" id="lbl-expenses">Ausgaben</div>
+            <div class="stat-value c-red" id="s-expenses">€0</div>
+          </div>
+          <div class="stat-card profit">
+            <div class="stat-icon">📈</div>
+            <div class="stat-label" id="lbl-profit">Profit</div>
+            <div class="stat-value c-green" id="s-profit">€0</div>
+          </div>
+          <div class="stat-card margin">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-label" id="lbl-margin">Marge</div>
+            <div class="stat-value c-amber" id="s-margin">0%</div>
+          </div>
+        </div>
+
+        <div class="tax-banner" id="tax-banner" style="display:none">
+          <div class="tax-banner-title" id="lbl-tax-title">📊 Steuerübersicht</div>
+          <div class="tax-grid" id="tax-grid"></div>
+          <div class="tax-alerts" id="tax-alerts"></div>
+        </div>
+
+        <div class="grid3">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title" id="lbl-recent">Letzte Einträge</span>
+            </div>
+            <div id="recent-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title" id="lbl-top">Top Artikel</span>
+            </div>
+            <div id="top-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SALES -->
+      <div id="tab-sales" class="tab-content" style="display:none">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title" id="lbl-all-sales">Alle Verkäufe</span>
+          </div>
+          <div id="sales-list"></div>
+        </div>
+      </div>
+
+      <!-- TAB: EXPENSES -->
+      <div id="tab-expenses" class="tab-content" style="display:none">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title" id="lbl-all-exp">Alle Ausgaben</span>
+          </div>
+          <div id="expenses-list"></div>
+        </div>
+      </div>
+
+      <!-- TAB: STATS -->
+      <div id="tab-stats" class="tab-content" style="display:none">
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title" id="lbl-chart-month">Profit nach Monat</span>
+            </div>
+            <div class="chart-wrap" id="chart-month-wrap">
+              <svg class="line-chart" id="chart-month" height="200" viewBox="0 0 500 200"></svg>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title" id="lbl-chart-rev">Umsatz nach Monat</span>
+            </div>
+            <div class="chart-wrap" id="chart-rev-wrap">
+              <svg class="line-chart" id="chart-rev" height="200" viewBox="0 0 500 200"></svg>
+            </div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title" id="lbl-chart-cat">Nach Kategorie</span>
+            </div>
+            <div class="chart-wrap" id="chart-cat-wrap">
+              <svg class="line-chart" id="chart-cat" height="200" viewBox="0 0 500 200"></svg>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title" id="lbl-top-items">Top Artikel</span>
+            </div>
+            <div id="top-items-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SETTINGS -->
+      <div id="tab-settings" class="tab-content" style="display:none">
+        <div class="settings-grid">
+          <div>
+            <div class="settings-section">
+              <div class="settings-label" id="lbl-country-set">🌍 Land</div>
+              <div class="panel">
+                <div style="padding:16px"><div class="country-grid" id="country-grid"></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="settings-section">
+              <div class="settings-label" id="lbl-info-set">📊 Info</div>
+              <div class="panel">
+                <div class="settings-item"><span class="s-label" id="lbl-set-sales">Verkäufe</span><span class="s-val" id="set-sales-count">0</span></div>
+                <div class="settings-item"><span class="s-label" id="lbl-set-exp">Ausgaben</span><span class="s-val" id="set-exp-count">0</span></div>
+                <div class="settings-item"><span class="s-label" id="lbl-set-best">Bester Monat</span><span class="s-val" id="set-best-month">–</span></div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-label" id="lbl-export-set">📄 Export</div>
+              <div class="panel">
+                <div class="settings-item" onclick="exportCSV()">
+                  <span class="s-label" id="lbl-export-csv">Als CSV exportieren</span>
+                  <span class="s-val">→</span>
+                </div>
+              </div>
+            </div>
+            <button class="danger-btn" id="lbl-delete-btn" onclick="clearAll()">🗑 Alle Daten löschen</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /app-layout -->
+
+<!-- Mobile Nav -->
+<nav class="mobile-nav">
+  <button class="mob-nav-item active" onclick="switchTab('home',this)" data-tab="home"><span class="mob-icon">📊</span><span id="mob-nav-home">Übersicht</span></button>
+  <button class="mob-nav-item" onclick="switchTab('sales',this)" data-tab="sales"><span class="mob-icon">🏷️</span><span id="mob-nav-sales">Verkäufe</span></button>
+  <button class="mob-nav-item" onclick="switchTab('expenses',this)" data-tab="expenses"><span class="mob-icon">💸</span><span id="mob-nav-exp">Ausgaben</span></button>
+  <button class="mob-nav-item" onclick="switchTab('stats',this)" data-tab="stats"><span class="mob-icon">📈</span><span id="mob-nav-stats">Statistik</span></button>
+  <button class="mob-nav-item" onclick="switchTab('settings',this)" data-tab="settings"><span class="mob-icon">⚙️</span><span id="mob-nav-set">Mehr</span></button>
+</nav>
+<button class="mob-fab" id="mob-fab" onclick="openSheet()">+</button>
+
+<!-- Sheet -->
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-header">
+    <div class="sheet-title" id="sheet-title">Eintrag hinzufügen</div>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+  </div>
+  <div class="type-selector">
+    <button class="type-btn active" id="type-sale" onclick="setType('sale')">🏷️ <span id="lbl-sale-btn">Verkauf</span></button>
+    <button class="type-btn" id="type-expense" onclick="setType('expense')">💸 <span id="lbl-exp-btn">Ausgabe</span></button>
+  </div>
+  <div id="sale-fields">
+    <div class="field"><label id="lbl-article">Artikel</label><input type="text" id="sale-name" placeholder="z.B. Nike Air Max 90"></div>
+    <div class="row2">
+      <div class="field"><label id="lbl-sell-price">Verkaufspreis</label><input type="number" inputmode="decimal" id="sale-price" placeholder="120"></div>
+      <div class="field"><label id="lbl-buy-price">Einkaufspreis</label><input type="number" inputmode="decimal" id="sale-cost" placeholder="80"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label id="lbl-cat">Kategorie</label><select id="sale-cat"></select></div>
+      <div class="field"><label id="lbl-plat">Plattform</label><select id="sale-plat"></select></div>
+    </div>
+  </div>
+  <div id="expense-fields" style="display:none">
+    <div class="field"><label id="lbl-desc">Beschreibung</label><input type="text" id="exp-name" placeholder="z.B. Versandkosten"></div>
+    <div class="row2">
+      <div class="field"><label id="lbl-amount">Betrag</label><input type="number" inputmode="decimal" id="exp-amount" placeholder="15"></div>
+      <div class="field"><label id="lbl-exp-cat">Kategorie</label><select id="exp-cat"></select></div>
+    </div>
+  </div>
+  <button class="btn-primary" id="save-btn" onclick="saveEntry()">Eintragen</button>
+</div>
+
+<script>
+// ═══════════════ COUNTRY DATA ═══════════════
+const COUNTRIES = {
+  DE:{name:'Deutschland',flag:'🇩🇪',lang:'de',currency:'EUR',symbol:'€',
+    platforms:['StockX','eBay','Vinted','Kleinanzeigen','GOAT','Depop','Sonstiges'],
+    expCats:['Versand','Plattformgebühr','Einkauf','Verpackung','Tools/Abo','Sonstiges'],
+    saleCats:['Sneaker','Kleidung','Elektronik','Taschen','Uhren','Sonstiges'],
+    tax:{freeLimit:600,vatRate:.19,vatThreshold:22000,
+      incomeBrackets:[{up:11604,rate:0},{up:17005,rate:.14},{up:66760,rate:.24},{up:277825,rate:.42},{up:Infinity,rate:.45}],
+      solidaritaet:.055,
+      notePrivate:'note_free_below',notePrivateOver:'note_free_over',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  AT:{name:'Österreich',flag:'🇦🇹',lang:'de',currency:'EUR',symbol:'€',
+    platforms:['eBay','Willhaben','StockX','Vinted','Shpock','GOAT','Sonstiges'],
+    expCats:['Versand','Plattformgebühr','Einkauf','Verpackung','Tools/Abo','Sonstiges'],
+    saleCats:['Sneaker','Kleidung','Elektronik','Taschen','Uhren','Sonstiges'],
+    tax:{freeLimit:0,vatRate:.20,vatThreshold:35000,
+      incomeBrackets:[{up:12816,rate:0},{up:20818,rate:.20},{up:34513,rate:.30},{up:66612,rate:.40},{up:99266,rate:.48},{up:1000000,rate:.50},{up:Infinity,rate:.55}],
+      notePrivate:'note_at_priv',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  CH:{name:'Schweiz',flag:'🇨🇭',lang:'de',currency:'CHF',symbol:'CHF ',
+    platforms:['Ricardo','Tutti','eBay','StockX','Vinted','Sonstiges'],
+    expCats:['Versand','Plattformgebühr','Einkauf','Verpackung','Tools/Abo','Sonstiges'],
+    saleCats:['Sneaker','Kleidung','Elektronik','Taschen','Uhren','Sonstiges'],
+    tax:{freeLimit:0,vatRate:.081,vatThreshold:100000,
+      incomeBrackets:[{up:14500,rate:0},{up:31600,rate:.077},{up:41400,rate:.088},{up:55200,rate:.099},{up:72500,rate:.110},{up:78100,rate:.120},{up:103600,rate:.130},{up:Infinity,rate:.115}],
+      notePrivate:'note_ch_priv',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  GB:{name:'UK',flag:'🇬🇧',lang:'en',currency:'GBP',symbol:'£',
+    platforms:['eBay','Depop','StockX','Vinted','GOAT','Facebook Marketplace','Other'],
+    expCats:['Shipping','Platform Fees','Purchase','Packaging','Tools/Subscriptions','Other'],
+    saleCats:['Sneakers','Clothing','Electronics','Bags','Watches','Other'],
+    tax:{freeLimit:1000,vatRate:.20,vatThreshold:85000,
+      incomeBrackets:[{up:12570,rate:0},{up:50270,rate:.20},{up:125140,rate:.40},{up:Infinity,rate:.45}],
+      notePrivate:'note_free_below',notePrivateOver:'note_free_over',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  US:{name:'USA',flag:'🇺🇸',lang:'en',currency:'USD',symbol:'$',
+    platforms:['StockX','eBay','GOAT','Grailed','Depop','Poshmark','Facebook Marketplace','Other'],
+    expCats:['Shipping','Platform Fees','Purchase','Packaging','Tools/Subscriptions','Other'],
+    saleCats:['Sneakers','Clothing','Electronics','Bags','Watches','Other'],
+    tax:{freeLimit:0,vatRate:0,vatThreshold:0,selfEmploymentTax:.153,
+      incomeBrackets:[{up:11600,rate:.10},{up:47150,rate:.12},{up:100525,rate:.22},{up:191950,rate:.24},{up:243725,rate:.32},{up:609350,rate:.35},{up:Infinity,rate:.37}],
+      notePrivate:'note_us_priv',noteVat:'note_us_vat'}},
+  FR:{name:'Frankreich',flag:'🇫🇷',lang:'fr',currency:'EUR',symbol:'€',
+    platforms:['Vinted','eBay','StockX','Leboncoin','Vestiaire Collective','GOAT','Autre'],
+    expCats:['Expédition','Frais plateforme','Achat','Emballage','Outils/Abo','Autre'],
+    saleCats:['Sneakers','Vêtements','Électronique','Sacs','Montres','Autre'],
+    tax:{freeLimit:3000,vatRate:.20,vatThreshold:36800,
+      incomeBrackets:[{up:11294,rate:0},{up:28797,rate:.11},{up:82341,rate:.30},{up:177106,rate:.41},{up:Infinity,rate:.45}],
+      notePrivate:'note_free_below',notePrivateOver:'note_free_over',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  NL:{name:'Niederlande',flag:'🇳🇱',lang:'nl',currency:'EUR',symbol:'€',
+    platforms:['eBay','Vinted','StockX','Marktplaats','GOAT','Depop','Overig'],
+    expCats:['Verzending','Platformkosten','Inkoop','Verpakking','Tools/Abo','Overig'],
+    saleCats:['Sneakers','Kleding','Elektronica','Tassen','Horloges','Overig'],
+    tax:{freeLimit:0,vatRate:.21,vatThreshold:20000,
+      incomeBrackets:[{up:73031,rate:.3693},{up:Infinity,rate:.495}],
+      notePrivate:'note_nl_priv',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  ES:{name:'Spanien',flag:'🇪🇸',lang:'es',currency:'EUR',symbol:'€',
+    platforms:['Wallapop','Vinted','eBay','StockX','GOAT','Depop','Otro'],
+    expCats:['Envío','Comisiones','Compra','Embalaje','Herramientas/Abo','Otro'],
+    saleCats:['Sneakers','Ropa','Electrónica','Bolsos','Relojes','Otro'],
+    tax:{freeLimit:0,vatRate:.21,vatThreshold:0,
+      incomeBrackets:[{up:12450,rate:.19},{up:20200,rate:.24},{up:35200,rate:.30},{up:60000,rate:.37},{up:300000,rate:.45},{up:Infinity,rate:.47}],
+      notePrivate:'note_es_priv',noteVat:'note_es_vat'}},
+  IT:{name:'Italien',flag:'🇮🇹',lang:'it',currency:'EUR',symbol:'€',
+    platforms:['Vinted','eBay','StockX','Subito','GOAT','Depop','Altro'],
+    expCats:['Spedizione','Commissioni','Acquisto','Imballaggio','Strumenti/Abo','Altro'],
+    saleCats:['Sneakers','Abbigliamento','Elettronica','Borse','Orologi','Altro'],
+    tax:{freeLimit:0,vatRate:.22,vatThreshold:85000,
+      incomeBrackets:[{up:28000,rate:.23},{up:50000,rate:.35},{up:Infinity,rate:.43}],
+      notePrivate:'note_it_priv',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  BE:{name:'Belgien',flag:'🇧🇪',lang:'fr',currency:'EUR',symbol:'€',
+    platforms:['eBay','Vinted','2dehands','StockX','GOAT','Autre'],
+    expCats:['Expédition','Frais plateforme','Achat','Emballage','Outils/Abo','Autre'],
+    saleCats:['Sneakers','Vêtements','Électronique','Sacs','Montres','Autre'],
+    tax:{freeLimit:0,vatRate:.21,vatThreshold:25000,
+      incomeBrackets:[{up:15200,rate:.25},{up:26830,rate:.40},{up:46440,rate:.45},{up:Infinity,rate:.50}],
+      notePrivate:'note_be_priv',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  PL:{name:'Polen',flag:'🇵🇱',lang:'pl',currency:'PLN',symbol:'PLN ',
+    platforms:['Allegro','OLX','eBay','Vinted','StockX','Inne'],
+    expCats:['Wysyłka','Opłaty platformy','Zakup','Opakowanie','Narzędzia/Abo','Inne'],
+    saleCats:['Sneakersy','Odzież','Elektronika','Torby','Zegarki','Inne'],
+    tax:{freeLimit:0,vatRate:.23,vatThreshold:200000,
+      incomeBrackets:[{up:30000,rate:0},{up:120000,rate:.12},{up:Infinity,rate:.32}],
+      notePrivate:'note_pl_priv',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+  SE:{name:'Schweden',flag:'🇸🇪',lang:'sv',currency:'SEK',symbol:'SEK ',
+    platforms:['Tradera','Blocket','eBay','Vinted','StockX','Annat'],
+    expCats:['Frakt','Plattformsavgifter','Inköp','Förpackning','Verktyg/Abo','Annat'],
+    saleCats:['Sneakers','Kläder','Elektronik','Väskor','Klockor','Annat'],
+    tax:{freeLimit:0,vatRate:.25,vatThreshold:80000,
+      incomeBrackets:[{up:620200,rate:.32},{up:Infinity,rate:.52}],
+      notePrivate:'note_se_priv',noteVat:'note_vat_below',noteVatOver:'note_vat_over'}},
+};
+
+// ═══════════════ TRANSLATIONS ═══════════════
+const T = {
+  de:{
+    overview:'Übersicht',sales:'Verkäufe',expenses:'Ausgaben',stats:'Statistik',settings:'Einstellungen',
+    revenue:'Umsatz',costs:'Ausgaben',profit:'Profit',margin:'Marge',
+    recent:'Letzte Einträge',topItems:'Top Artikel',allSales:'Alle Verkäufe',allExp:'Alle Ausgaben',
+    addEntry:'Eintrag',saleBtn:'Verkauf',expBtn:'Ausgabe',
+    article:'Artikel',sellPrice:'Verkaufspreis',buyPrice:'Einkaufspreis',
+    category:'Kategorie',platform:'Plattform',desc:'Beschreibung',amount:'Betrag',expCat:'Kategorie',
+    save:'Eintragen',del:'✕ Löschen',
+    noEntries:'Noch keine Einträge.',noSales:'Noch keine Verkäufe.',noExp:'Noch keine Ausgaben.',
+    taxTitle:'📊 Steuerübersicht',taxProfit:'Netto-Profit',taxEst:'Geschätzte Steuer',
+    taxNet:'Verbleibender Gewinn',taxFree:'Freigrenze',taxIncome:'Einkommensteuer',
+    taxSoli:'Solidaritätszuschlag',taxSE:'Self-Employment Tax',taxVatLabel:'MwSt-Schwelle',
+    chartMonth:'Profit nach Monat',chartRev:'Umsatz nach Monat',chartCat:'Nach Kategorie',topItemsTitle:'Top Artikel',
+    countrySet:'🌍 Land',infoSet:'📊 Info',exportSet:'📄 Export',
+    setSales:'Verkäufe',setExp:'Ausgaben',setBest:'Bester Monat',
+    exportCsv:'Als CSV exportieren',deleteBtn:'🗑 Alle Daten löschen',
+    confirmDel:'Wirklich alle Daten löschen?',fillAll:'Bitte alle Felder ausfüllen',
+    dashSub:'Dein Profit Dashboard',
+    note_free_below:'✅ Du bist unter der Freigrenze ({val}/Jahr) – steuerfrei!',
+    note_free_over:'⚠️ Über der Freigrenze ({val}/Jahr) – Einkommensteuer fällig.',
+    note_vat_below:'✅ Unter der MwSt-Schwelle ({val}/Jahr) – keine MwSt nötig.',
+    note_vat_over:'🧾 MwSt-Schwelle ({val}/Jahr) überschritten – MwSt-Pflicht!',
+    note_at_priv:'ℹ️ Regelmäßige Verkäufe = gewerbepflichtig in AT.',
+    note_ch_priv:'ℹ️ CH: Kapitalgewinne aus privatem Handel grundsätzlich steuerfrei.',
+    note_us_priv:'⚠️ USA: Alle Gewinne sind steuerpflichtig. Schedule C + SE Tax (15.3%) auf Profit.',
+    note_us_vat:'ℹ️ Sales Tax variiert nach Bundesstaat. 1099-K ab $600 via Plattform.',
+    note_nl_priv:'ℹ️ NL: Regelmäßige Verkäufe = steuerpflichtig. Einzelfallprüfung.',
+    note_es_priv:'⚠️ ES: Gewinne = IRPF-pflichtig. Regelmäßig → Autónomo nötig.',
+    note_es_vat:'ℹ️ ES: IVA ab dem ersten Euro bei gewerblicher Tätigkeit.',
+    note_it_priv:'ℹ️ IT: Gelegentliche Verkäufe oft steuerfrei. Regelmäßig → Partita IVA.',
+    note_be_priv:'ℹ️ BE: Gelegentliche Verkäufe meist steuerfrei. Regelmäßig → meldepflichtig.',
+    note_pl_priv:'ℹ️ PL: Gelegentliche Verkäufe oft steuerfrei. Regelmäßig → Firma nötig.',
+    note_se_priv:'ℹ️ SE: Private Gewinne oft steuerfrei. Regelmäßig → F-Skatt.',
+  },
+  en:{
+    overview:'Overview',sales:'Sales',expenses:'Expenses',stats:'Stats',settings:'Settings',
+    revenue:'Revenue',costs:'Expenses',profit:'Profit',margin:'Margin',
+    recent:'Recent Entries',topItems:'Top Items',allSales:'All Sales',allExp:'All Expenses',
+    addEntry:'Add Entry',saleBtn:'Sale',expBtn:'Expense',
+    article:'Item',sellPrice:'Sale Price',buyPrice:'Purchase Price',
+    category:'Category',platform:'Platform',desc:'Description',amount:'Amount',expCat:'Category',
+    save:'Save',del:'✕ Delete',
+    noEntries:'No entries yet.',noSales:'No sales yet.',noExp:'No expenses yet.',
+    taxTitle:'📊 Tax Overview',taxProfit:'Net Profit',taxEst:'Estimated Tax',
+    taxNet:'Remaining Profit',taxFree:'Tax-Free Limit',taxIncome:'Income Tax',
+    taxSoli:'Solidarity Surcharge',taxSE:'Self-Employment Tax',taxVatLabel:'VAT Threshold',
+    chartMonth:'Profit by Month',chartRev:'Revenue by Month',chartCat:'By Category',topItemsTitle:'Top Items',
+    countrySet:'🌍 Country',infoSet:'📊 Info',exportSet:'📄 Export',
+    setSales:'Sales',setExp:'Expenses',setBest:'Best Month',
+    exportCsv:'Export as CSV',deleteBtn:'🗑 Delete All Data',
+    confirmDel:'Really delete all data?',fillAll:'Please fill in all fields',
+    dashSub:'Your Profit Dashboard',
+    note_free_below:'✅ Below the tax-free limit ({val}/year) – no tax!',
+    note_free_over:'⚠️ Above the tax-free limit ({val}/year) – income tax applies.',
+    note_vat_below:'✅ Below VAT threshold ({val}/year) – no VAT needed.',
+    note_vat_over:'🧾 VAT threshold ({val}/year) exceeded – VAT registration required!',
+    note_at_priv:'ℹ️ Regular sales in AT require a trade license.',
+    note_ch_priv:'ℹ️ CH: Capital gains from private trading generally tax-free.',
+    note_us_priv:'⚠️ USA: All profits are taxable. Schedule C + SE Tax (15.3%) on net profit.',
+    note_us_vat:'ℹ️ Sales tax varies by state. 1099-K threshold: $600+ via platforms.',
+    note_nl_priv:'ℹ️ NL: Regular selling is taxable. Assessed per case.',
+    note_es_priv:'⚠️ ES: Profits subject to IRPF. Regular activity → Autónomo required.',
+    note_es_vat:'ℹ️ ES: IVA required from first euro for business activity.',
+    note_it_priv:'ℹ️ IT: Occasional sales often tax-free. Regular → Partita IVA required.',
+    note_be_priv:'ℹ️ BE: Occasional sales mostly tax-free. Regular → must declare.',
+    note_pl_priv:'ℹ️ PL: Occasional sales often tax-free. Regular → business registration.',
+    note_se_priv:'ℹ️ SE: Private gains often tax-free. Regular → F-skatt required.',
+  },
+  fr:{
+    overview:'Aperçu',sales:'Ventes',expenses:'Dépenses',stats:'Statistiques',settings:'Paramètres',
+    revenue:'Chiffre d\'affaires',costs:'Dépenses',profit:'Profit',margin:'Marge',
+    recent:'Dernières entrées',topItems:'Top articles',allSales:'Toutes les ventes',allExp:'Toutes les dépenses',
+    addEntry:'Ajouter',saleBtn:'Vente',expBtn:'Dépense',
+    article:'Article',sellPrice:'Prix de vente',buyPrice:'Prix d\'achat',
+    category:'Catégorie',platform:'Plateforme',desc:'Description',amount:'Montant',expCat:'Catégorie',
+    save:'Enregistrer',del:'✕ Supprimer',
+    noEntries:'Aucune entrée.',noSales:'Aucune vente.',noExp:'Aucune dépense.',
+    taxTitle:'📊 Aperçu fiscal',taxProfit:'Profit net',taxEst:'Impôt estimé',
+    taxNet:'Bénéfice restant',taxFree:'Seuil exonéré',taxIncome:'Impôt sur le revenu',
+    taxSoli:'Contribution solidarité',taxSE:'Taxe auto-entrepreneur',taxVatLabel:'Seuil TVA',
+    chartMonth:'Profit par mois',chartRev:'CA par mois',chartCat:'Par catégorie',topItemsTitle:'Top articles',
+    countrySet:'🌍 Pays',infoSet:'📊 Informations',exportSet:'📄 Export',
+    setSales:'Ventes',setExp:'Dépenses',setBest:'Meilleur mois',
+    exportCsv:'Exporter en CSV',deleteBtn:'🗑 Supprimer toutes les données',
+    confirmDel:'Supprimer toutes les données?',fillAll:'Veuillez remplir tous les champs',
+    dashSub:'Votre tableau de bord profit',
+    note_free_below:'✅ En dessous du seuil ({val}/an) – exonéré d\'impôt !',
+    note_free_over:'⚠️ Au-dessus du seuil ({val}/an) – impôt sur le revenu dû.',
+    note_vat_below:'✅ Sous le seuil TVA ({val}/an) – pas de TVA requise.',
+    note_vat_over:'🧾 Seuil TVA ({val}/an) dépassé – TVA obligatoire !',
+    note_at_priv:'ℹ️ Ventes régulières en AT nécessitent une licence commerciale.',
+    note_ch_priv:'ℹ️ CH: Plus-values privées généralement exonérées.',
+    note_us_priv:'⚠️ USA: Tous les bénéfices sont imposables. Schedule C + SE Tax (15.3%).',
+    note_us_vat:'ℹ️ Taxe de vente variable selon l\'État.',
+    note_nl_priv:'ℹ️ NL: Ventes régulières imposables. Évaluation au cas par cas.',
+    note_es_priv:'⚠️ ES: Bénéfices soumis à l\'IRPF. Activité régulière → Autónomo.',
+    note_es_vat:'ℹ️ ES: TVA dès le premier euro pour activité commerciale.',
+    note_it_priv:'ℹ️ IT: Ventes occasionnelles souvent exonérées. Régulier → Partita IVA.',
+    note_be_priv:'ℹ️ BE: Ventes occasionnelles généralement exonérées.',
+    note_pl_priv:'ℹ️ PL: Ventes occasionnelles souvent exonérées.',
+    note_se_priv:'ℹ️ SE: Gains privés souvent exonérés. Régulier → F-skatt.',
+  },
+  nl:{overview:'Overzicht',sales:'Verkopen',expenses:'Uitgaven',stats:'Statistieken',settings:'Instellingen',revenue:'Omzet',costs:'Uitgaven',profit:'Winst',margin:'Marge',recent:'Recente items',topItems:'Top artikelen',allSales:'Alle verkopen',allExp:'Alle uitgaven',addEntry:'Toevoegen',saleBtn:'Verkoop',expBtn:'Uitgave',article:'Artikel',sellPrice:'Verkoopprijs',buyPrice:'Inkoopprijs',category:'Categorie',platform:'Platform',desc:'Omschrijving',amount:'Bedrag',expCat:'Categorie',save:'Opslaan',del:'✕ Verwijderen',noEntries:'Geen items.',noSales:'Geen verkopen.',noExp:'Geen uitgaven.',taxTitle:'📊 Belastingoverzicht',taxProfit:'Nettowinst',taxEst:'Geschatte belasting',taxNet:'Resterende winst',taxFree:'Vrijstelling',taxIncome:'Inkomstenbelasting',taxSoli:'Solidariteitsbijdrage',taxSE:'Zelfstandigenbelasting',taxVatLabel:'BTW-drempel',chartMonth:'Winst per maand',chartRev:'Omzet per maand',chartCat:'Per categorie',topItemsTitle:'Top artikelen',countrySet:'🌍 Land',infoSet:'📊 Info',exportSet:'📄 Export',setSales:'Verkopen',setExp:'Uitgaven',setBest:'Beste maand',exportCsv:'Exporteer CSV',deleteBtn:'🗑 Alle data verwijderen',confirmDel:'Alle data verwijderen?',fillAll:'Vul alle velden in',dashSub:'Jouw winstdashboard',note_free_below:'✅ Onder de vrijstelling ({val}/jaar) – belastingvrij!',note_free_over:'⚠️ Boven de vrijstelling ({val}/jaar) – inkomstenbelasting verschuldigd.',note_vat_below:'✅ Onder de BTW-drempel ({val}/jaar) – geen BTW vereist.',note_vat_over:'🧾 BTW-drempel ({val}/jaar) overschreden – BTW-registratie vereist!',note_at_priv:'ℹ️ Regelmatige verkoop in AT vereist handelsvergunning.',note_ch_priv:'ℹ️ CH: Vermogenswinsten uit privéhandel doorgaans belastingvrij.',note_us_priv:'⚠️ VS: Alle winsten zijn belastbaar. Schedule C + SE Tax (15.3%).',note_us_vat:'ℹ️ Verkoopbelasting varieert per staat.',note_nl_priv:'ℹ️ NL: Regelmatige verkoop is belastbaar. Per geval beoordeeld.',note_es_priv:'⚠️ ES: Winsten onderworpen aan IRPF. Regelmatig → Autónomo.',note_es_vat:'ℹ️ ES: BTW vanaf de eerste euro bij zakelijke activiteit.',note_it_priv:'ℹ️ IT: Incidentele verkopen vaak vrijgesteld.',note_be_priv:'ℹ️ BE: Incidentele verkopen meestal vrijgesteld.',note_pl_priv:'ℹ️ PL: Incidentele verkopen vaak vrijgesteld.',note_se_priv:'ℹ️ SE: Privéwinsten vaak vrijgesteld.'},
+  es:{overview:'Resumen',sales:'Ventas',expenses:'Gastos',stats:'Estadísticas',settings:'Ajustes',revenue:'Ingresos',costs:'Gastos',profit:'Beneficio',margin:'Margen',recent:'Últimas entradas',topItems:'Top artículos',allSales:'Todas las ventas',allExp:'Todos los gastos',addEntry:'Añadir',saleBtn:'Venta',expBtn:'Gasto',article:'Artículo',sellPrice:'Precio venta',buyPrice:'Precio compra',category:'Categoría',platform:'Plataforma',desc:'Descripción',amount:'Importe',expCat:'Categoría',save:'Guardar',del:'✕ Eliminar',noEntries:'Sin entradas.',noSales:'Sin ventas.',noExp:'Sin gastos.',taxTitle:'📊 Resumen fiscal',taxProfit:'Beneficio neto',taxEst:'Impuesto estimado',taxNet:'Ganancia restante',taxFree:'Límite exento',taxIncome:'Impuesto sobre la renta',taxSoli:'Recargo solidaridad',taxSE:'Impuesto autónomo',taxVatLabel:'Umbral IVA',chartMonth:'Beneficio por mes',chartRev:'Ingresos por mes',chartCat:'Por categoría',topItemsTitle:'Top artículos',countrySet:'🌍 País',infoSet:'📊 Info',exportSet:'📄 Exportar',setSales:'Ventas',setExp:'Gastos',setBest:'Mejor mes',exportCsv:'Exportar CSV',deleteBtn:'🗑 Borrar todos los datos',confirmDel:'¿Borrar todos los datos?',fillAll:'Rellena todos los campos',dashSub:'Tu panel de beneficios',note_free_below:'✅ Por debajo del límite exento ({val}/año) – ¡sin impuestos!',note_free_over:'⚠️ Por encima del límite ({val}/año) – IRPF aplicable.',note_vat_below:'✅ Por debajo del umbral IVA ({val}/año) – sin IVA.',note_vat_over:'🧾 Umbral IVA ({val}/año) superado – IVA obligatorio.',note_at_priv:'ℹ️ Ventas regulares en AT requieren licencia.',note_ch_priv:'ℹ️ CH: Ganancias de capital privadas generalmente exentas.',note_us_priv:'⚠️ EEUU: Todos los beneficios son tributables. Schedule C + SE Tax (15.3%).',note_us_vat:'ℹ️ Impuesto sobre ventas varía por estado.',note_nl_priv:'ℹ️ NL: Ventas regulares son tributables.',note_es_priv:'⚠️ ES: Beneficios sujetos a IRPF. Actividad regular → Autónomo.',note_es_vat:'ℹ️ ES: IVA desde el primer euro en actividad empresarial.',note_it_priv:'ℹ️ IT: Ventas ocasionales a menudo exentas.',note_be_priv:'ℹ️ BE: Ventas ocasionales generalmente exentas.',note_pl_priv:'ℹ️ PL: Ventas ocasionales a menudo exentas.',note_se_priv:'ℹ️ SE: Ganancias privadas a menudo exentas.'},
+  it:{overview:'Panoramica',sales:'Vendite',expenses:'Spese',stats:'Statistiche',settings:'Impostazioni',revenue:'Fatturato',costs:'Spese',profit:'Profitto',margin:'Margine',recent:'Ultimi movimenti',topItems:'Top articoli',allSales:'Tutte le vendite',allExp:'Tutte le spese',addEntry:'Aggiungi',saleBtn:'Vendita',expBtn:'Spesa',article:'Articolo',sellPrice:'Prezzo vendita',buyPrice:'Prezzo acquisto',category:'Categoria',platform:'Piattaforma',desc:'Descrizione',amount:'Importo',expCat:'Categoria',save:'Salva',del:'✕ Elimina',noEntries:'Nessun dato.',noSales:'Nessuna vendita.',noExp:'Nessuna spesa.',taxTitle:'📊 Riepilogo fiscale',taxProfit:'Profitto netto',taxEst:'Tasse stimate',taxNet:'Guadagno residuo',taxFree:'Soglia esenzione',taxIncome:'Imposta sul reddito',taxSoli:'Addizionale solidarietà',taxSE:'Imposta autonomi',taxVatLabel:'Soglia IVA',chartMonth:'Profitto per mese',chartRev:'Fatturato per mese',chartCat:'Per categoria',topItemsTitle:'Top articoli',countrySet:'🌍 Paese',infoSet:'📊 Info',exportSet:'📄 Esporta',setSales:'Vendite',setExp:'Spese',setBest:'Mese migliore',exportCsv:'Esporta CSV',deleteBtn:'🗑 Elimina tutti i dati',confirmDel:'Eliminare tutti i dati?',fillAll:'Compila tutti i campi',dashSub:'Il tuo pannello profitti',note_free_below:'✅ Sotto la soglia ({val}/anno) – esente da imposte!',note_free_over:'⚠️ Sopra la soglia ({val}/anno) – imposta sul reddito dovuta.',note_vat_below:'✅ Sotto la soglia IVA ({val}/anno) – nessuna IVA richiesta.',note_vat_over:'🧾 Soglia IVA ({val}/anno) superata – IVA obbligatoria!',note_at_priv:'ℹ️ Vendite regolari in AT richiedono licenza commerciale.',note_ch_priv:'ℹ️ CH: Plusvalenze private generalmente esenti.',note_us_priv:'⚠️ USA: Tutti i profitti sono tassabili. Schedule C + SE Tax (15.3%).',note_us_vat:'ℹ️ Sales tax varia per stato.',note_nl_priv:'ℹ️ NL: Vendite regolari imponibili.',note_es_priv:'⚠️ ES: Profitti soggetti a IRPF.',note_es_vat:'ℹ️ ES: IVA dal primo euro per attività commerciale.',note_it_priv:'ℹ️ IT: Vendite occasionali spesso esenti. Regolari → Partita IVA.',note_be_priv:'ℹ️ BE: Vendite occasionali per lo più esenti.',note_pl_priv:'ℹ️ PL: Vendite occasionali spesso esenti.',note_se_priv:'ℹ️ SE: Plusvalenze private spesso esenti.'},
+  pl:{overview:'Przegląd',sales:'Sprzedaż',expenses:'Wydatki',stats:'Statystyki',settings:'Ustawienia',revenue:'Przychód',costs:'Wydatki',profit:'Zysk',margin:'Marża',recent:'Ostatnie wpisy',topItems:'Top artykuły',allSales:'Cała sprzedaż',allExp:'Wszystkie wydatki',addEntry:'Dodaj',saleBtn:'Sprzedaż',expBtn:'Wydatek',article:'Artykuł',sellPrice:'Cena sprzedaży',buyPrice:'Cena zakupu',category:'Kategoria',platform:'Platforma',desc:'Opis',amount:'Kwota',expCat:'Kategoria',save:'Zapisz',del:'✕ Usuń',noEntries:'Brak wpisów.',noSales:'Brak sprzedaży.',noExp:'Brak wydatków.',taxTitle:'📊 Przegląd podatkowy',taxProfit:'Zysk netto',taxEst:'Szacowany podatek',taxNet:'Pozostały zysk',taxFree:'Limit zwolnienia',taxIncome:'Podatek dochodowy',taxSoli:'Dopłata solidarnościowa',taxSE:'Podatek samozatrudnienia',taxVatLabel:'Próg VAT',chartMonth:'Zysk wg miesiąca',chartRev:'Przychód wg miesiąca',chartCat:'Wg kategorii',topItemsTitle:'Top artykuły',countrySet:'🌍 Kraj',infoSet:'📊 Info',exportSet:'📄 Eksport',setSales:'Sprzedaż',setExp:'Wydatki',setBest:'Najlepszy miesiąc',exportCsv:'Eksportuj CSV',deleteBtn:'🗑 Usuń wszystkie dane',confirmDel:'Usunąć wszystkie dane?',fillAll:'Wypełnij wszystkie pola',dashSub:'Twój panel zysku',note_free_below:'✅ Poniżej limitu ({val}/rok) – bez podatku!',note_free_over:'⚠️ Powyżej limitu ({val}/rok) – podatek dochodowy.',note_vat_below:'✅ Poniżej progu VAT ({val}/rok) – VAT nie wymagany.',note_vat_over:'🧾 Próg VAT ({val}/rok) przekroczony – rejestracja VAT wymagana!',note_at_priv:'ℹ️ Regularna sprzedaż w AT wymaga licencji.',note_ch_priv:'ℹ️ CH: Zyski kapitałowe z handlu prywatnego zazwyczaj bez podatku.',note_us_priv:'⚠️ USA: Wszystkie zyski są opodatkowane. Schedule C + SE Tax (15.3%).',note_us_vat:'ℹ️ Podatek od sprzedaży różni się wg stanu.',note_nl_priv:'ℹ️ NL: Regularna sprzedaż podlega opodatkowaniu.',note_es_priv:'⚠️ ES: Zyski podlegają IRPF.',note_es_vat:'ℹ️ ES: VAT od pierwszego euro dla działalności.',note_it_priv:'ℹ️ IT: Okazjonalna sprzedaż często zwolniona.',note_be_priv:'ℹ️ BE: Okazjonalna sprzedaż często zwolniona.',note_pl_priv:'ℹ️ PL: Okazjonalna sprzedaż często zwolniona. Regularna → firma.',note_se_priv:'ℹ️ SE: Prywatne zyski często zwolnione.'},
+  sv:{overview:'Översikt',sales:'Försäljning',expenses:'Utgifter',stats:'Statistik',settings:'Inställningar',revenue:'Intäkt',costs:'Utgifter',profit:'Vinst',margin:'Marginal',recent:'Senaste poster',topItems:'Topp artiklar',allSales:'All försäljning',allExp:'Alla utgifter',addEntry:'Lägg till',saleBtn:'Försäljning',expBtn:'Utgift',article:'Artikel',sellPrice:'Försäljningspris',buyPrice:'Inköpspris',category:'Kategori',platform:'Plattform',desc:'Beskrivning',amount:'Belopp',expCat:'Kategori',save:'Spara',del:'✕ Radera',noEntries:'Inga poster.',noSales:'Ingen försäljning.',noExp:'Inga utgifter.',taxTitle:'📊 Skatteöversikt',taxProfit:'Nettovinst',taxEst:'Beräknad skatt',taxNet:'Kvarvarande vinst',taxFree:'Skattefri gräns',taxIncome:'Inkomstskatt',taxSoli:'Solidaritetstillägg',taxSE:'Egenavgift',taxVatLabel:'Momsgräns',chartMonth:'Vinst per månad',chartRev:'Intäkt per månad',chartCat:'Per kategori',topItemsTitle:'Topp artiklar',countrySet:'🌍 Land',infoSet:'📊 Info',exportSet:'📄 Export',setSales:'Försäljning',setExp:'Utgifter',setBest:'Bästa månaden',exportCsv:'Exportera CSV',deleteBtn:'🗑 Radera alla data',confirmDel:'Radera alla data?',fillAll:'Fyll i alla fält',dashSub:'Din vinstöversikt',note_free_below:'✅ Under skattefri gräns ({val}/år) – skattefritt!',note_free_over:'⚠️ Över skattefri gräns ({val}/år) – inkomstskatt gäller.',note_vat_below:'✅ Under momsgränsen ({val}/år) – ingen moms krävs.',note_vat_over:'🧾 Momsgränsen ({val}/år) överskriden – momsregistrering krävs!',note_at_priv:'ℹ️ Regelbunden försäljning i AT kräver handelsregistrering.',note_ch_priv:'ℹ️ CH: Kapitalvinster från privat handel i regel skattefria.',note_us_priv:'⚠️ USA: Alla vinster är skattepliktiga. Schedule C + SE Tax (15.3%).',note_us_vat:'ℹ️ Försäljningsskatt varierar per delstat.',note_nl_priv:'ℹ️ NL: Regelbunden försäljning är skattepliktig.',note_es_priv:'⚠️ ES: Vinster föremål för IRPF.',note_es_vat:'ℹ️ ES: Moms från första euron vid affärsverksamhet.',note_it_priv:'ℹ️ IT: Tillfällig försäljning ofta skattefri.',note_be_priv:'ℹ️ BE: Tillfällig försäljning oftast skattefri.',note_pl_priv:'ℹ️ PL: Tillfällig försäljning ofta skattefri.',note_se_priv:'ℹ️ SE: Privata vinster ofta skattefria. Regelbundet → F-skatt.'},
+};
+
+// ═══════════════ STATE ═══════════════
+const STORE = 'reselltrack_v3';
+let data = {sales:[],expenses:[],country:'DE'};
+function loadData(){try{const s=localStorage.getItem(STORE);if(s)data=JSON.parse(s);}catch(e){}if(!COUNTRIES[data.country])data.country='DE';}
+function saveData(){try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function today(){return new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function getC(){return COUNTRIES[data.country];}
+function getL(){return T[getC().lang]||T.de;}
+function fmt(n){return getC().symbol+(Math.round(n*100)/100).toFixed(2);}
+
+// ═══════════════ TAX CALC ═══════════════
+function calcIncomeTax(profit,brackets){
+  if(profit<=0)return 0;
+  let tax=0,prev=0;
+  for(const b of brackets){
+    if(profit<=prev)break;
+    const taxable=Math.min(profit,b.up)-prev;
+    tax+=taxable*b.rate;
+    prev=b.up;
+    if(profit<=b.up)break;
+  }
+  return tax;
+}
+function calcTax(revenue,profit){
+  const t=getC().tax;
+  const res={incomeTax:0,selfEmpTax:0,soli:0,vatDue:false,belowFree:false,total:0};
+  if(t.freeLimit&&profit<=t.freeLimit&&profit>=0){res.belowFree=true;}
+  else{res.incomeTax=calcIncomeTax(profit,t.incomeBrackets);}
+  if(t.solidaritaet&&res.incomeTax>0)res.soli=res.incomeTax*t.solidaritaet;
+  if(t.selfEmploymentTax&&profit>0)res.selfEmpTax=profit*t.selfEmploymentTax;
+  if(t.vatThreshold>0&&revenue>=t.vatThreshold)res.vatDue=true;
+  res.total=res.incomeTax+res.soli+res.selfEmpTax;
+  return res;
+}
+
+// ═══════════════ CURRENT TAB ═══════════════
+let currentTab='home';
+let entryType='sale';
+
+// ═══════════════ LANGUAGE APPLY ═══════════════
+function applyLanguage(){
+  const L=getL();const C=getC();
+  // Sidebar
+  setT('sb-sub',L.dashSub);
+  setT('sb-nav-home',L.overview);setT('sb-nav-sales',L.sales);setT('sb-nav-exp',L.expenses);
+  setT('sb-nav-stats',L.stats);setT('sb-nav-set',L.settings);
+  document.getElementById('sb-country').innerHTML=`<span class="flag">${C.flag}</span> ${C.name}`;
+  // Mobile nav
+  setT('mob-nav-home',L.overview);setT('mob-nav-sales',L.sales);setT('mob-nav-exp',L.expenses);
+  setT('mob-nav-stats',L.stats);setT('mob-nav-set',L.settings);
+  // Topbar
+  setT('add-btn-lbl',L.addEntry);
+  // Stats labels
+  setT('lbl-revenue',L.revenue);setT('lbl-expenses',L.costs);setT('lbl-profit',L.profit);setT('lbl-margin',L.margin);
+  // Panels
+  setT('lbl-recent',L.recent);setT('lbl-top',L.topItems);
+  setT('lbl-all-sales',L.allSales);setT('lbl-all-exp',L.allExp);
+  setT('lbl-chart-month',L.chartMonth);setT('lbl-chart-rev',L.chartRev);
+  setT('lbl-chart-cat',L.chartCat);setT('lbl-top-items',L.topItemsTitle);
+  // Tax
+  setT('lbl-tax-title',L.taxTitle);
+  // Settings
+  setT('lbl-country-set',L.countrySet);setT('lbl-info-set',L.infoSet);setT('lbl-export-set',L.exportSet);
+  setT('lbl-set-sales',L.setSales);setT('lbl-set-exp',L.setExp);setT('lbl-set-best',L.setBest);
+  setT('lbl-export-csv',L.exportCsv);setT('lbl-delete-btn',L.deleteBtn);
+  // Sheet
+  setT('sheet-title',L.addEntry);
+  setT('lbl-sale-btn',L.saleBtn);setT('lbl-exp-btn',L.expBtn);
+  setT('lbl-article',L.article);
+  setT('lbl-sell-price',L.sellPrice+' ('+C.symbol.trim()+')');
+  setT('lbl-buy-price',L.buyPrice+' ('+C.symbol.trim()+')');
+  setT('lbl-cat',L.category);setT('lbl-plat',L.platform);
+  setT('lbl-desc',L.desc);setT('lbl-amount',L.amount+' ('+C.symbol.trim()+')');
+  setT('lbl-exp-cat',L.expCat);setT('save-btn',L.save);
+  // Dropdowns
+  fillSelect('sale-plat',C.platforms);fillSelect('sale-cat',C.saleCats);fillSelect('exp-cat',C.expCats);
+  // Topbar title
+  updateTopbarTitle();
+}
+function setT(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt;}
+function fillSelect(id,opts){const s=document.getElementById(id);if(!s)return;s.innerHTML=opts.map(o=>`<option>${o}</option>`).join('');}
+function updateTopbarTitle(){
+  const L=getL();
+  const titles={home:L.overview,sales:L.sales,expenses:L.expenses,stats:L.stats,settings:L.settings};
+  setT('topbar-title',titles[currentTab]||L.overview);
+  setT('topbar-sub',getL().dashSub);
+}
+
+// ═══════════════ COUNTRY ═══════════════
+function buildCountryGrid(){
+  const grid=document.getElementById('country-grid');
+  grid.innerHTML=Object.entries(COUNTRIES).map(([code,c])=>
+    `<button class="country-btn ${data.country===code?'active':''}" onclick="setCountry('${code}')">${c.flag}<br>${c.name}</button>`
+  ).join('');
+}
+function setCountry(code){
+  data.country=code;saveData();
+  applyLanguage();buildCountryGrid();render();
+}
+
+// ═══════════════ TAB SWITCH ═══════════════
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>{t.style.display='none';});
+  document.querySelectorAll('.sidebar-item,.mob-nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).style.display='block';
+  if(btn)btn.classList.add('active');
+  // sync both navs
+  document.querySelectorAll('[data-tab="'+name+'"]').forEach(b=>b.classList.add('active'));
+  currentTab=name;
+  const isSets=name==='settings';
+  document.getElementById('mob-fab').style.display=isSets?'none':'flex';
+  updateTopbarTitle();
+  render();
+}
+
+// ═══════════════ SHEET ═══════════════
+function openSheet(){
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeSheet(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+  document.body.style.overflow='';
+}
+function setType(t){
+  entryType=t;
+  document.getElementById('type-sale').classList.toggle('active',t==='sale');
+  document.getElementById('type-expense').classList.toggle('active',t==='expense');
+  document.getElementById('sale-fields').style.display=t==='sale'?'block':'none';
+  document.getElementById('expense-fields').style.display=t==='expense'?'block':'none';
+}
+function saveEntry(){
+  const L=getL();
+  if(entryType==='sale'){
+    const name=document.getElementById('sale-name').value.trim();
+    const price=parseFloat(document.getElementById('sale-price').value);
+    const cost=parseFloat(document.getElementById('sale-cost').value);
+    if(!name||isNaN(price)||isNaN(cost)){alert(L.fillAll);return;}
+    data.sales.push({id:uid(),name,price,cost,cat:document.getElementById('sale-cat').value,plat:document.getElementById('sale-plat').value,date:today(),ts:Date.now()});
+    document.getElementById('sale-name').value='';document.getElementById('sale-price').value='';document.getElementById('sale-cost').value='';
+  }else{
+    const name=document.getElementById('exp-name').value.trim();
+    const amount=parseFloat(document.getElementById('exp-amount').value);
+    if(!name||isNaN(amount)){alert(L.fillAll);return;}
+    data.expenses.push({id:uid(),name,amount,cat:document.getElementById('exp-cat').value,date:today(),ts:Date.now()});
+    document.getElementById('exp-name').value='';document.getElementById('exp-amount').value='';
+  }
+  saveData();closeSheet();render();
+}
+
+// ═══════════════ COLORS ═══════════════
+const CAT_COLORS={Sneaker:'#00e87a',Sneakers:'#00e87a',Sneakersy:'#00e87a',Kleidung:'#4d9fff',Clothing:'#4d9fff',Vêtements:'#4d9fff',Kläder:'#4d9fff',Kleding:'#4d9fff',Odzież:'#4d9fff',Elektronik:'#a78bfa',Electronics:'#a78bfa',Taschen:'#fb923c',Bags:'#fb923c',Sacs:'#fb923c',Tassen:'#fb923c',Uhren:'#f59e0b',Watches:'#f59e0b',Montres:'#f59e0b',Horloges:'#f59e0b',Versand:'#ff4455',Shipping:'#ff4455',Expédition:'#ff4455',Frakt:'#ff4455',default:'#5a7090'};
+function catColor(c){return CAT_COLORS[c]||CAT_COLORS.default;}
+
+// ═══════════════ RENDER ═══════════════
+function render(){
+  const revenue=data.sales.reduce((a,s)=>a+s.price,0);
+  const cogs=data.sales.reduce((a,s)=>a+s.cost,0);
+  const extraExp=data.expenses.reduce((a,e)=>a+e.amount,0);
+  const totalExp=cogs+extraExp;
+  const profit=revenue-totalExp;
+  const margin=revenue>0?(profit/revenue*100):0;
+  setT('s-revenue',fmt(revenue));
+  setT('s-expenses',fmt(totalExp));
+  setT('s-profit',fmt(profit));
+  document.getElementById('s-profit').className='stat-value '+(profit>=0?'c-green':'c-red');
+  setT('s-margin',margin.toFixed(1)+'%');
+  renderTax(revenue,profit);
+  if(currentTab==='home'){renderRecent();renderTopList();}
+  if(currentTab==='sales')renderSales();
+  if(currentTab==='expenses')renderExpenses();
+  if(currentTab==='stats')renderStats();
+  if(currentTab==='settings')renderSettings();
+}
+
+// ── TAX ──────────────────────────────
+function renderTax(revenue,profit){
+  const L=getL();const C=getC();const t=C.tax;
+  const banner=document.getElementById('tax-banner');
+  if(!data.sales.length&&!data.expenses.length){banner.style.display='none';return;}
+  banner.style.display='block';
+  const tax=calcTax(revenue,profit);
+  const netProfit=profit-tax.total;
+  // Grid
+  let gridHtml=`
+    <div class="tax-item"><div class="tax-item-label">${L.taxProfit}</div><div class="tax-item-val" style="color:${profit>=0?'var(--green)':'var(--red)'}">${fmt(profit)}</div></div>`;
+  if(t.freeLimit){gridHtml+=`<div class="tax-item"><div class="tax-item-label">${L.taxFree}</div><div class="tax-item-val" style="color:var(--muted)">${fmt(t.freeLimit)}/Jahr</div></div>`;}
+  if(tax.incomeTax>0)gridHtml+=`<div class="tax-item"><div class="tax-item-label">${L.taxIncome}</div><div class="tax-item-val" style="color:var(--red)">-${fmt(tax.incomeTax)}</div></div>`;
+  if(tax.soli>0)gridHtml+=`<div class="tax-item"><div class="tax-item-label">${L.taxSoli}</div><div class="tax-item-val" style="color:var(--red)">-${fmt(tax.soli)}</div></div>`;
+  if(tax.selfEmpTax>0)gridHtml+=`<div class="tax-item"><div class="tax-item-label">${L.taxSE}</div><div class="tax-item-val" style="color:var(--red)">-${fmt(tax.selfEmpTax)}</div></div>`;
+  if(tax.total>0)gridHtml+=`<div class="tax-item"><div class="tax-item-label"><b>${L.taxEst}</b></div><div class="tax-item-val" style="color:var(--red)"><b>-${fmt(tax.total)}</b></div></div>`;
+  gridHtml+=`<div class="tax-item" style="border:1px solid rgba(0,232,122,.2);background:var(--green-dim)"><div class="tax-item-label"><b>${L.taxNet}</b></div><div class="tax-item-val" style="color:${netProfit>=0?'var(--green)':'var(--red)'}"><b>${fmt(netProfit)}</b></div></div>`;
+  document.getElementById('tax-grid').innerHTML=gridHtml;
+  // Alerts
+  let alerts='';
+  const buildNote=(key,val)=>{let s=L[key]||'';return s.replace('{val}',fmt(val));};
+  if(t.freeLimit&&profit>=0){
+    if(tax.belowFree)alerts+=`<div class="tax-alert ok">${buildNote('note_free_below',t.freeLimit)}</div>`;
+    else alerts+=`<div class="tax-alert warn">${buildNote('note_free_over',t.freeLimit)}</div>`;
+  }
+  if(t.notePrivate&&!t.freeLimit&&L[t.notePrivate])alerts+=`<div class="tax-alert ok">${L[t.notePrivate]}</div>`;
+  if(t.vatThreshold>0){
+    if(tax.vatDue)alerts+=`<div class="tax-alert warn">${buildNote('note_vat_over',t.vatThreshold)}</div>`;
+    else alerts+=`<div class="tax-alert ok">${buildNote('note_vat_below',t.vatThreshold)}</div>`;
+  }
+  if(t.noteVat&&L[t.noteVat]&&!t.vatThreshold)alerts+=`<div class="tax-alert ok">${L[t.noteVat]}</div>`;
+  if(t.selfEmploymentTax&&L.note_us_vat)alerts+=`<div class="tax-alert ok">${L.note_us_vat}</div>`;
+  document.getElementById('tax-alerts').innerHTML=alerts;
+}
+
+// ── CARDS ─────────────────────────────
+function saleCard(s,showDel=false){
+  const L=getL();const p=s.price-s.cost;const col=catColor(s.cat);
+  return`<div class="list-item">
+    <div class="li-left">
+      <div class="li-name">${s.name}</div>
+      <div class="li-sub">${s.date} · ${s.plat}</div>
+      <span class="badge" style="background:${col}22;color:${col}">${s.cat}</span>
+      ${showDel?`<br><button class="del-btn" onclick="deleteSale('${s.id}')">${L.del}</button>`:''}
+    </div>
+    <div class="li-right">
+      <div class="li-amount" style="color:var(--blue)">${fmt(s.price)}</div>
+      <div class="pill ${p>=0?'pos':'neg'}">${p>=0?'+':''}${fmt(p)}</div>
+    </div>
+  </div>`;
+}
+function expCard(e,showDel=false){
+  const L=getL();const col=catColor(e.cat);
+  return`<div class="list-item">
+    <div class="li-left">
+      <div class="li-name">${e.name}</div>
+      <div class="li-sub">${e.date}</div>
+      <span class="badge" style="background:${col}22;color:${col}">${e.cat}</span>
+      ${showDel?`<br><button class="del-btn" onclick="deleteExp('${e.id}')">${L.del}</button>`:''}
+    </div>
+    <div class="li-right">
+      <div class="li-amount" style="color:var(--red)">-${fmt(e.amount)}</div>
+    </div>
+  </div>`;
+}
+function emptyState(msg){return`<div class="empty-state"><div class="empty-icon">📦</div><p>${msg}</p></div>`;}
+
+function renderRecent(){
+  const L=getL();
+  const all=[...data.sales.map(s=>({...s,_t:'sale'})),...data.expenses.map(e=>({...e,_t:'exp'}))]
+    .sort((a,b)=>b.ts-a.ts).slice(0,6);
+  const el=document.getElementById('recent-list');
+  el.innerHTML=all.length?all.map(i=>i._t==='sale'?saleCard(i):expCard(i)).join(''):emptyState(L.noEntries);
+}
+function renderTopList(){
+  const L=getL();
+  const top=[...data.sales].sort((a,b)=>(b.price-b.cost)-(a.price-a.cost)).slice(0,5);
+  const el=document.getElementById('top-list');
+  el.innerHTML=top.length?top.map(s=>saleCard(s)).join(''):emptyState(L.noSales);
+}
+function renderSales(){
+  const L=getL();
+  const el=document.getElementById('sales-list');
+  el.innerHTML=data.sales.length?[...data.sales].reverse().map(s=>saleCard(s,true)).join(''):emptyState(L.noSales);
+}
+function renderExpenses(){
+  const L=getL();
+  const el=document.getElementById('expenses-list');
+  el.innerHTML=data.expenses.length?[...data.expenses].reverse().map(e=>expCard(e,true)).join(''):emptyState(L.noExp);
+}
+function deleteSale(id){data.sales=data.sales.filter(s=>s.id!==id);saveData();render();}
+function deleteExp(id){data.expenses=data.expenses.filter(e=>e.id!==id);saveData();render();}
+
+// ═══════════════ LINE CHARTS ═══════════════
+function drawLineChart(svgId,points,color,label){
+  const svg=document.getElementById(svgId);
+  if(!svg)return;
+  const W=500,H=200,pad={t:20,b:36,l:52,r:16};
+  const iW=W-pad.l-pad.r,iH=H-pad.t-pad.b;
+  if(!points||points.length<1){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#5a7090" font-size="13">–</text>`;return;}
+  const vals=points.map(p=>p.v);
+  const minV=Math.min(...vals,0),maxV=Math.max(...vals,1);
+  const rng=maxV-minV||1;
+  const xs=points.map((_,i)=>pad.l+(i/(Math.max(points.length-1,1)))*iW);
+  const ys=points.map(p=>pad.t+iH-(((p.v-minV)/rng)*iH));
+  // zero line
+  const zy=pad.t+iH-((0-minV)/rng)*iH;
+  let html='';
+  // grid lines
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(iH/4)*i;
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#1f2d45" stroke-width="1"/>`;
+    const val=maxV-((maxV-minV)/4)*i;
+    html+=`<text x="${pad.l-6}" y="${y+4}" text-anchor="end" fill="#5a7090" font-size="10">${Math.round(val)}</text>`;
+  }
+  // zero line highlight
+  if(minV<0&&maxV>0)html+=`<line x1="${pad.l}" y1="${zy}" x2="${W-pad.r}" y2="${zy}" stroke="${color}44" stroke-width="1" stroke-dasharray="4,3"/>`;
+  // area
+  if(points.length>1){
+    const areaPath=`M${xs[0]},${ys[0]}`+xs.slice(1).map((x,i)=>`L${x},${ys[i+1]}`).join('')+`L${xs[xs.length-1]},${pad.t+iH} L${xs[0]},${pad.t+iH} Z`;
+    html+=`<defs><linearGradient id="g${svgId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.3"/><stop offset="100%" stop-color="${color}" stop-opacity="0.02"/></linearGradient></defs>`;
+    html+=`<path d="${areaPath}" fill="url(#g${svgId})"/>`;
+    // line
+    const linePath=`M${xs[0]},${ys[0]}`+xs.slice(1).map((x,i)=>`L${x},${ys[i+1]}`).join('');
+    html+=`<path d="${linePath}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  // dots + labels
+  points.forEach((p,i)=>{
+    const col=p.v>=0?color:'#ff4455';
+    html+=`<circle cx="${xs[i]}" cy="${ys[i]}" r="4" fill="${col}" stroke="#0e1420" stroke-width="2"/>`;
+    // x labels
+    html+=`<text x="${xs[i]}" y="${H-6}" text-anchor="middle" fill="#5a7090" font-size="10">${p.label}</text>`;
+  });
+  svg.innerHTML=html;
+}
+
+function buildMonthData(){
+  const months={};
+  data.sales.forEach(s=>{const p=s.date.split('.');const k=p[1]+'/'+p[2].slice(2);if(!months[k])months[k]={rev:0,cost:0};months[k].rev+=s.price;months[k].cost+=s.cost;});
+  data.expenses.forEach(e=>{const p=e.date.split('.');const k=p[1]+'/'+p[2].slice(2);if(!months[k])months[k]={rev:0,cost:0};months[k].cost+=e.amount;});
+  return months;
+}
+
+function renderStats(){
+  const months=buildMonthData();
+  const keys=Object.keys(months).sort();
+  const profitPts=keys.map(k=>({label:k,v:months[k].rev-months[k].cost}));
+  const revPts=keys.map(k=>({label:k,v:months[k].rev}));
+  drawLineChart('chart-month',profitPts,'#00e87a');
+  drawLineChart('chart-rev',revPts,'#4d9fff');
+  // Category chart — one point per category
+  const cats={};
+  data.sales.forEach(s=>{if(!cats[s.cat])cats[s.cat]={profit:0,count:0};cats[s.cat].profit+=s.price-s.cost;cats[s.cat].count++;});
+  const catKeys=Object.keys(cats).sort((a,b)=>cats[b].profit-cats[a].profit);
+  const catPts=catKeys.map(k=>({label:k.slice(0,5),v:cats[k].profit}));
+  drawLineChart('chart-cat',catPts,'#a78bfa');
+  // Top items
+  const L=getL();
+  const top=[...data.sales].sort((a,b)=>(b.price-b.cost)-(a.price-a.cost)).slice(0,5);
+  const el=document.getElementById('top-items-list');
+  el.innerHTML=top.length?top.map(s=>saleCard(s)).join(''):emptyState(L.noSales);
+}
+
+function renderSettings(){
+  const L=getL();
+  setT('set-sales-count',data.sales.length);setT('set-exp-count',data.expenses.length);
+  const months={};
+  data.sales.forEach(s=>{const p=s.date.split('.');const k=p[1]+'/'+p[2];if(!months[k])months[k]=0;months[k]+=s.price-s.cost;});
+  const best=Object.entries(months).sort((a,b)=>b[1]-a[1])[0];
+  setT('set-best-month',best?best[0]+' ('+fmt(best[1])+')':'–');
+  buildCountryGrid();
+}
+
+function exportCSV(){
+  let csv='Typ,Name,Verkaufspreis,Einkaufspreis,Profit,Kategorie,Plattform,Datum\n';
+  data.sales.forEach(s=>{csv+=`Verkauf,"${s.name}",${s.price},${s.cost},${s.price-s.cost},"${s.cat}","${s.plat}","${s.date}"\n`;});
+  csv+='\nTyp,Name,Betrag,Kategorie,Datum\n';
+  data.expenses.forEach(e=>{csv+=`Ausgabe,"${e.name}",${e.amount},"${e.cat}","${e.date}"\n`;});
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reselltrack.csv';a.click();
+}
+function clearAll(){
+  const L=getL();
+  if(confirm(L.confirmDel)){data={sales:[],expenses:[],country:data.country};saveData();render();}
+}
+
+// SW
+if('serviceWorker' in navigator){
+  const sw=`const C='rt-v2';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./'])));});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+
+// INIT
+loadData();
+document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+applyLanguage();
+document.getElementById('tab-home').style.display='block';
+render();
+</script>
+</body>
+</html>
